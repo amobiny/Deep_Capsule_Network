@@ -5,11 +5,7 @@ from utils import write_spec
 
 if args.model == 'original_capsule':
     from models.Original_CapsNet import Orig_CapsNet as Model
-elif args.model == 'matrix_capsule':
-    from models.Matrix_Capsule_EM_routing import MatrixCapsNet as Model
-elif args.model == 'fast_capsule':
-    from models.Fast_CapsNet import FastCapsNet as Model
-elif args.model == 'vector_capsule':
+elif args.model == 'deep_capsule':
     from models.Deep_CapsNet import CapsNet as Model
 elif args.model == 'alexnet':
     from models.AlexNet import AlexNet as Model

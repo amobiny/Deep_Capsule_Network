@@ -1,13 +1,11 @@
 import tensorflow as tf
 
-# reload_step: alexnet: 33749, resnet: 123749, original_capsule: 1583999, vector_capsule: 2964599
-
 flags = tf.app.flags
 flags.DEFINE_string('mode', 'train', 'train, train_sequence, test, test_sequence, grad_cam or get_features')
 flags.DEFINE_integer('reload_step', 0, 'model number to load (either for testing or continue training)')
-flags.DEFINE_string('run_name', 'orig_1', 'Run name')
-flags.DEFINE_string('model', 'densenet', 'alexnet, resnet, densenet, original_capsule, '
-                                                 'fast_capsule, matrix_capsule or vector_capsule')
+flags.DEFINE_string('run_name', 'run1', 'Run name')
+flags.DEFINE_string('model', 'deep_capsule', 'alexnet, resnet, densenet, original_capsule, '
+                                                 'fast_capsule or deep_capsule')
 flags.DEFINE_string('loss_type', 'margin', 'cross_entropy, spread or margin')
 flags.DEFINE_boolean('add_recon_loss', False, 'To add reconstruction loss')
 flags.DEFINE_boolean('L2_reg', False, 'Adds L2-regularization to all the network weights')
