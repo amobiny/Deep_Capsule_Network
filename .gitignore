@@ -105,6 +105,7 @@ venv.bak/
 
 .idea/
 *.h5
+Result/
 
 
 

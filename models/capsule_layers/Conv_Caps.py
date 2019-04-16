@@ -8,7 +8,7 @@ from models.capsule_layers.ops import update_routing
 
 class ConvCapsuleLayer(layers.Layer):
     def __init__(self, kernel_size, num_caps, caps_dim, strides=1, padding='same', routings=3,
-                 trainable=True, kernel_initializer='he_normal', **kwargs):
+                 kernel_initializer='he_normal', **kwargs):
         super(ConvCapsuleLayer, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.num_caps = num_caps

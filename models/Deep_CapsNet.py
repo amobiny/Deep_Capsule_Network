@@ -11,8 +11,7 @@ class CapsNet(BaseModel):
     def __init__(self, sess, conf):
         super(CapsNet, self).__init__(sess, conf)
         self.build_network(self.x)
-        if self.conf.mode != 'train_sequence':
-            self.configure_network()
+        self.configure_network()
 
     def build_network(self, x):
         # Building network...
@@ -31,7 +30,7 @@ class CapsNet(BaseModel):
 
             # Layer 3: Convolutional Capsule
             secondary_caps = ConvCapsuleLayer(kernel_size=5, num_caps=8, caps_dim=16, strides=2, padding='same',
-                                              trainable=self.conf.trainable, routings=3, name='secondarycaps')(primary_caps)
+                                              routings=3, name='secondarycaps')(primary_caps)
             _, H, W, D, dim = secondary_caps.get_shape()
             sec_cap_reshaped = layers.Reshape((H.value * W.value * D.value, dim.value))(secondary_caps)
 
@@ -51,45 +50,15 @@ class CapsNet(BaseModel):
             self.y_pred = tf.squeeze(y_prob_argmax)
             # [?] (predicted labels)
 
-            if self.conf.add_recon_loss:
+            if self.conf.add_decoder:
                 self.mask()
                 self.decoder()
-
-            if self.conf.before_mask:
-                self.features = self.digit_caps
-            else:
-                self.features = self.output_masked
 
     def decoder(self):
         with tf.variable_scope('Deconv_Decoder'):
             cube_size = np.sqrt(self.conf.digit_caps_dim).astype(int)
             decoder_input = tf.reshape(self.output_masked, [-1, self.conf.num_cls, cube_size, cube_size])
             cube = tf.transpose(decoder_input, [0, 2, 3, 1])
-            # res1 = Deconv2D(cube,
-            #                 filter_size=2,
-            #                 num_filters=8,
-            #                 stride=1,
-            #                 layer_name="deconv_0",
-            #                 out_shape=[self.conf.batch_size, 7, 7, 8])
-            # res1 = Deconv2D(res1,
-            #                 filter_size=2,
-            #                 num_filters=16,
-            #                 stride=2,
-            #                 layer_name="deconv_1",
-            #                 out_shape=[self.conf.batch_size, 13, 13, 16])
-            # res2 = Deconv2D(res1,
-            #                 filter_size=4,
-            #                 num_filters=16,
-            #                 stride=2,
-            #                 layer_name="deconv_2",
-            #                 out_shape=[self.conf.batch_size, 26, 26, 16])
-            # self.decoder_output = Deconv2D(res2,
-            #                                filter_size=4,
-            #                                num_filters=1,
-            #                                stride=2,
-            #                                layer_name="deconv_3",
-            #                                out_shape=[self.conf.batch_size, 51, 51, 1])
-
             conv_rec1_params = {"filters": 8,
                                 "kernel_size": 2,
                                 "strides": 1,

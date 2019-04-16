@@ -1,13 +1,13 @@
 import tensorflow as tf
 
 flags = tf.app.flags
-flags.DEFINE_string('mode', 'train', 'train, train_sequence, test, test_sequence, grad_cam or get_features')
+flags.DEFINE_string('mode', 'train', 'train, test, grad_cam')
 flags.DEFINE_integer('reload_step', 0, 'model number to load (either for testing or continue training)')
 flags.DEFINE_string('run_name', 'run1', 'Run name')
 flags.DEFINE_string('model', 'deep_capsule', 'alexnet, resnet, densenet, original_capsule, '
-                                                 'fast_capsule or deep_capsule')
+                                             'fast_capsule or deep_capsule')
 flags.DEFINE_string('loss_type', 'margin', 'cross_entropy, spread or margin')
-flags.DEFINE_boolean('add_recon_loss', False, 'To add reconstruction loss')
+flags.DEFINE_boolean('add_decoder', True, 'To add reconstruction loss')
 flags.DEFINE_boolean('L2_reg', False, 'Adds L2-regularization to all the network weights')
 flags.DEFINE_float('lmbda', 5e-04, 'L2-regularization coefficient')
 
@@ -67,4 +67,3 @@ flags.DEFINE_integer('h1', 512, 'Number of hidden units of the first FC layer of
 flags.DEFINE_integer('h2', 1024, 'Number of hidden units of the second FC layer of the reconstruction network')
 
 args = tf.app.flags.FLAGS
-

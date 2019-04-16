@@ -16,11 +16,10 @@ elif args.model == 'densenet':
 
 
 def main(_):
-    if args.mode not in ['train', 'train_sequence', 'test', 'test_sequence',
-                         'get_features', 'grad_cam', 'grad_cam_sequence']:
+    if args.mode not in ['train', 'test', 'grad_cam']:
         print('invalid mode: ', args.mode)
         print("Please input a mode: train or test")
-    elif args.mode == 'train' or args.mode == 'test' or args.mode == 'get_features' or args.mode == 'grad_cam':
+    else:
         model = Model(tf.Session(), args)
         if not os.path.exists(args.modeldir+args.run_name):
             os.makedirs(args.modeldir+args.run_name)
@@ -38,27 +37,8 @@ def main(_):
                 os.makedirs(args.imgdir + args.run_name)
             model.grad_cam(args.reload_step)
 
-    elif args.mode == 'train_sequence' or args.mode == 'test_sequence' or args.mode == 'grad_cam_sequence':
-        session = tf.Session()
-        CNN_Model = Model(session, args)
-        from models.Recurrent_Network import RecNet
-        model = RecNet(session, args, CNN_Model)
-        if not os.path.exists(args.rnn_modeldir+args.rnn_run_name):
-            os.makedirs(args.rnn_modeldir+args.rnn_run_name)
-        if not os.path.exists(args.rnn_logdir+args.rnn_run_name):
-            os.makedirs(args.rnn_logdir+args.rnn_run_name)
-        if args.mode == 'train_sequence':
-            write_spec(args)
-            model.train()
-        elif args.mode == 'test_sequence':
-            model.test(args.reload_step, args.rnn_reload_step)
-        elif args.mode == 'grad_cam_sequence':
-            if not os.path.exists(args.imgdir + args.rnn_run_name):
-                os.makedirs(args.imgdir + args.rnn_run_name)
-            model.grad_cam(args.reload_step, args.rnn_reload_step)
-
 
 if __name__ == '__main__':
     # configure which gpu or cpu to use
-    # os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
     tf.app.run()

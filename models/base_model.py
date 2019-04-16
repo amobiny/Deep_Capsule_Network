@@ -1,10 +1,10 @@
 import tensorflow as tf
 import os
 import numpy as np
-from models.utils.loss_ops import margin_loss, spread_loss, cross_entropy
+from models.utils.loss_utils import margin_loss, spread_loss, cross_entropy
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
-from models.utils.metrics import precision_recall
+from models.utils.eval_utils import precision_recall
 import h5py
 from models.utils.plot_utils import visualize
 
@@ -14,17 +14,10 @@ class BaseModel(object):
         self.sess = sess
         self.conf = conf
         self.summary_list = []
-        if self.conf.mode != 'train_sequence' and self.conf.mode != 'get_features' \
-                and self.conf.mode != 'test_sequence' and self.conf.mode != 'grad_cam_sequence':
-            self.input_shape = [conf.batch_size, conf.height, conf.width, conf.channel]
-            self.output_shape = [self.conf.batch_size, self.conf.num_cls]
-            self.global_step = tf.get_variable('global_step', [], initializer=tf.constant_initializer(0),
-                                               trainable=False)
-        else:
-            self.input_shape = [conf.batch_size * conf.max_time, self.conf.height, self.conf.width, self.conf.channel]
-            self.output_shape = [conf.batch_size * conf.max_time, self.conf.num_cls]
-
+        self.input_shape = [conf.batch_size, self.conf.height, self.conf.width, self.conf.channel]
+        self.output_shape = [conf.batch_size, self.conf.num_cls]
         self.create_placeholders()
+        self.global_step = tf.get_variable('global_step', [], initializer=tf.constant_initializer(0), trainable=False)
 
     def create_placeholders(self):
         with tf.name_scope('Input'):
@@ -76,10 +69,9 @@ class BaseModel(object):
                                                                         for v in tf.get_collection('weights')]))
                     loss += l2_loss
                 self.summary_list.append(tf.summary.scalar('l2_loss', l2_loss))
-            if self.conf.add_recon_loss:
+            if self.conf.add_decoder:
                 with tf.variable_scope('Reconstruction_Loss'):
-                    orgin = tf.reshape(self.x, shape=(-1, self.conf.height * self.conf.width * self.conf.channel))
-                    squared = tf.square(self.decoder_output - orgin)
+                    squared = tf.square(self.decoder_output - self.x)
                     self.recon_err = tf.reduce_mean(squared)
                     self.total_loss = loss + self.conf.alpha * self.recon_err
                     self.summary_list.append(tf.summary.scalar('reconstruction_loss', self.recon_err))
@@ -105,7 +97,7 @@ class BaseModel(object):
         self.margin = tf.train.piecewise_constant(tf.cast(self.global_step, dtype=tf.int32),
                                                   boundaries=[int(NUM_STEPS_PER_EPOCH *
                                                                   margin_schedule_epoch_achieve_max * x / 7)
-                                                              for x in xrange(1, 8)],
+                                                              for x in range(1, 8)],
                                                   values=[x / 10.0 for x in range(2, 10)])
 
     def configure_network(self):
@@ -124,20 +116,6 @@ class BaseModel(object):
             optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
             """Compute gradient."""
             grads = optimizer.compute_gradients(self.total_loss)
-            # grad_check = [tf.check_numerics(g, message='Gradient NaN Found!') for g, _ in grads if g is not None] \
-            #              + [tf.check_numerics(self.total_loss, message='Loss NaN Found')]
-            """Apply graident."""
-            # with tf.control_dependencies(grad_check):
-            #     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-            #     with tf.control_dependencies(update_ops):
-            """Add graident summary"""
-            # for grad, var in grads:
-            #     self.summary_list.append(tf.summary.histogram(var.name, grad))
-            if self.conf.grad_clip:
-                """Clip graident."""
-                grads = [(tf.clip_by_value(grad, -10., 10.), var) for grad, var in grads]
-            """NaN to zero graident."""
-            # grads = [(tf.where(tf.is_nan(grad), tf.zeros(grad.shape), grad), var) for grad, var in grads]
             self.train_op = optimizer.apply_gradients(grads, global_step=self.global_step)
         self.sess.run(tf.global_variables_initializer())
         trainable_vars = tf.trainable_variables()

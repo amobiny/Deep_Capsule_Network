@@ -1,6 +1,6 @@
 from models.base_model import BaseModel
 import tensorflow as tf
-from models.utils.ops_cnn import conv_layer, fc_layer, dropout, max_pool, lrn, relu
+from models.utils.cnn_utils import conv_layer, fc_layer, dropout, max_pool, lrn, relu
 from tensorflow.contrib.layers import flatten
 
 

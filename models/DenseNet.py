@@ -1,6 +1,6 @@
 from models.base_model import BaseModel
 import tensorflow as tf
-from models.utils.ops_cnn import batch_normalization, relu, conv_layer, dropout, average_pool, fc_layer, max_pool, \
+from models.utils.cnn_utils import batch_normalization, relu, conv_layer, dropout, average_pool, fc_layer, max_pool, \
     global_average_pool, flatten, concatenation
 
 
